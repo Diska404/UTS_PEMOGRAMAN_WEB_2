@@ -6,10 +6,15 @@ Eksperimen ini dibuat untuk memahami bagaimana WebSocket dapat digunakan sebagai
 
 ## Identitas
 
-- Nama: **Diska Kurnia Azzahra Putra**
-- NIM: **312210369**
-- Mata kuliah: **Pemrograman Web 2**
-- Topik: **WebSocket**
+| Keterangan | Isi |
+|---|---|
+| Nama | Diska Kurnia Azzahra Putra |
+| NIM | 312210369 |
+| Mata Kuliah | Pemrograman Web 2 |
+| Topik | WebSocket |
+| Studi Kasus | Simulasi Smart Home IoT dan Monitoring Energi Surya |
+| Teknologi Utama | Node.js, WebSocket, HTML, CSS, JavaScript |- Nama: **Diska Kurnia Azzahra Putra**
+
 
 ## Tujuan Eksperimen
 
@@ -167,23 +172,23 @@ Hasil ini menunjukkan bahwa WebSocket dapat digunakan untuk simulasi monitoring 
 
 ### Tampilan Dashboard
 
-![Dashboard Smart Home IoT](SS/dashboard-full.png)
+>![Dashboard Smart Home IoT](SS/dashboard-full.png)
 
 ### Grafik Real-Time
 
->![Grafik Real-Time](screenshots/dashboard-graph.png)
+>![Grafik Real-Time](SS/dashboard-graph.png)
 
 ### Terminal Server Node.js
 
->![Terminal Server](screenshots/terminal-server.png)
+>![Terminal Server](SS/terminal-server.png)
 
 ### Kode Server
 
->![Kode server.js](screenshots/server-code.png)
+>![Kode server.js](SS/server-code.png)
 
 ### Kode Dashboard
 
->![Kode index.html](screenshots/index-code.png)
+>![Kode index.html](SS/index-code.png)
 
 ## Catatan
 
