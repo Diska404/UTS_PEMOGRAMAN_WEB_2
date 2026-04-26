@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Home IoT WebSocket Dashboard</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --border: #334155;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --blue: #2563eb;
+      --blue-soft: rgba(37, 99, 235, 0.18);
+      --green: #22c55e;
+      --green-soft: rgba(34, 197, 94, 0.16);
+      --yellow: #f59e0b;
+      --yellow-soft: rgba(245, 158, 11, 0.16);
+      --red: #ef4444;
+      --red-soft: rgba(239, 68, 68, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.28), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.14), transparent 28%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      padding: 24px;
+      background: linear-gradient(135deg, rgba(30, 58, 138, 0.9), rgba(15, 23, 42, 0.95));
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(12px);
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -0.5px;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      color: #cbd5e1;
+      max-width: 900px;
+      line-height: 1.5;
+    }
+
+    .container {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      background: rgba(17, 24, 39, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.26);
+      overflow: hidden;
+    }
+
+    .card.highlight {
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.16), rgba(17, 24, 39, 0.94));
+    }
+
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-6 { grid-column: span 6; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 18px;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .metric {
+      font-size: 34px;
+      font-weight: bold;
+      margin: 8px 0;
+      letter-spacing: -1px;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .ok {
+      background: var(--green-soft);
+      color: #bbf7d0;
+      border: 1px solid rgba(34, 197, 94, 0.35);
+    }
+
+    .warn {
+      background: var(--yellow-soft);
+      color: #fde68a;
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+
+    .danger {
+      background: var(--red-soft);
+      color: #fecaca;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+    }
+
+    .grid-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .item {
+      background: rgba(31, 41, 55, 0.92);
+      border: 1px solid rgba(51, 65, 85, 0.75);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .item small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+    }
+
+    button {
+      border: none;
+      padding: 8px 11px;
+      border-radius: 10px;
+      cursor: pointer;
+      background: var(--blue);
+      color: white;
+      font-weight: bold;
+      min-width: 72px;
+    }
+
+    button:hover {
+      filter: brightness(1.12);
+    }
+
+    button.off {
+      background: #475569;
+    }
+
+    .chart-wrap {
+      position: relative;
+      height: 210px;
+      background: rgba(2, 6, 23, 0.72);
+      border: 1px solid rgba(51, 65, 85, 0.8);
+      border-radius: 14px;
+      padding: 10px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .mini-card {
+      background: rgba(2, 6, 23, 0.52);
+      border: 1px solid rgba(51, 65, 85, 0.7);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .mini-card b {
+      display: block;
+      margin-top: 6px;
+      font-size: 18px;
+    }
+
+    .progress {
+      height: 10px;
+      background: #020617;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(51, 65, 85, 0.8);
+      margin-top: 10px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #2563eb, #22c55e);
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+
+    .log {
+      height: 260px;
+      overflow-y: auto;
+      background: rgba(2, 6, 23, 0.72);
+      padding: 12px;
+      border-radius: 14px;
+      font-size: 14px;
+      border: 1px solid rgba(51, 65, 85, 0.8);
+    }
+
+    .log div {
+      margin-bottom: 8px;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 8px;
+      color: #cbd5e1;
+    }
+
+    .alert-box {
+      display: none;
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 14px;
+      background: var(--yellow-soft);
+      color: #fde68a;
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      font-weight: bold;
+    }
+
+    @media (max-width: 1100px) {
+      .span-3, .span-4, .span-6, .span-8 {
+        grid-column: span 12;
+      }
+
+      .mini-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 650px) {
+      .container {
+        padding: 14px;
+      }
+
+      header {
+        padding: 18px;
+      }
+
+      .grid-list, .mini-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <div>
+        <h1>Smart Home IoT & Solar Energy Dashboard</h1>
+        <p>Simulasi monitoring rumah pintar, sensor bahaya, konsumsi listrik, panel surya, baterai, dan inverter menggunakan WebSocket secara real-time.</p>
+      </div>
+      <div id="connectionStatus" class="status warn">Menghubungkan...</div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card highlight span-3">
+      <h2>Daya Panel Surya</h2>
+      <div id="solarPower" class="metric">0 W</div>
+      <p id="solarMode" class="muted">Menunggu data...</p>
+    </section>
+
+    <section class="card highlight span-3">
+      <h2>Baterai</h2>
+      <div id="batteryPercent" class="metric">0%</div>
+      <div class="progress"><div id="batteryProgress" class="progress-bar"></div></div>
+      <p id="batteryVoltage" class="muted">0 V</p>
+    </section>
+
+    <section class="card highlight span-3">
+      <h2>Konsumsi Rumah</h2>
+      <div id="totalConsumption" class="metric">0 W</div>
+      <p id="inverterStatus" class="muted">Status inverter...</p>
+    </section>
+
+    <section class="card highlight span-3">
+      <h2>Data Masuk</h2>
+      <div id="totalData" class="metric">0</div>
+      <p class="muted">Jumlah paket data sensor yang diterima dashboard.</p>
+    </section>
+
+    <section class="card span-8">
+      <h2>Grafik Real-Time Energi Rumah <span class="muted">update tiap 2 detik</span></h2>
+      <div class="chart-wrap">
+        <canvas id="energyChart"></canvas>
+      </div>
+      <div class="mini-grid">
+        <div class="mini-card"><span class="muted">Panel Surya</span><b id="miniSolar">0 W</b></div>
+        <div class="mini-card"><span class="muted">Konsumsi</span><b id="miniConsumption">0 W</b></div>
+        <div class="mini-card"><span class="muted">Baterai</span><b id="miniBattery">0%</b></div>
+        <div class="mini-card"><span class="muted">Suhu Dapur</span><b id="miniTemp">0°C</b></div>
+      </div>
+    </section>
+
+    <section class="card span-4">
+      <h2>Status Sensor Bahaya</h2>
+      <p>Suhu Dapur</p>
+      <div id="kitchenTemp" class="metric">0°C</div>
+      <p>Asap: <b id="smokeStatus">-</b></p>
+      <p>Kebakaran: <span id="fireStatus" class="status ok">Aman</span></p>
+      <p>Gas LPG: <span id="gasStatus" class="status ok">Aman</span></p>
+      <div id="alertBox" class="alert-box">Peringatan sensor akan tampil di sini.</div>
+    </section>
+
+    <section class="card span-6">
+      <h2>Kontrol Lampu Rumah</h2>
+      <div id="lights" class="grid-list"></div>
+    </section>
+
+    <section class="card span-6">
+      <h2>Status CCTV</h2>
+      <div id="cctv" class="grid-list"></div>
+    </section>
+
+    <section class="card span-8">
+      <h2>Konsumsi Daya Tiap Perangkat</h2>
+      <div id="devices" class="grid-list"></div>
+    </section>
+
+    <section class="card span-4">
+      <h2>Tegangan per Baterai</h2>
+      <div id="batteryList"></div>
+    </section>
+
+    <section class="card span-4">
+      <h2>Perawatan Panel Surya</h2>
+      <p>Terakhir dibersihkan: <b id="lastCleaning">-</b></p>
+      <p>Jadwal berikutnya: <b id="nextCleaning">-</b></p>
+      <p class="muted" id="maintenanceStatus">-</p>
+    </section>
+
+    <section class="card span-8">
+      <h2>Log Real-Time</h2>
+      <div id="log" class="log"></div>
+    </section>
+  </main>
+
+  <script>
+    const socket = new WebSocket('ws://localhost:8080');
+
+    const connectionStatus = document.getElementById('connectionStatus');
+    const logEl = document.getElementById('log');
+    const energyCanvas = document.getElementById('energyChart');
+    const chartHistory = [];
+    const maxChartPoints = 36;
+
+    socket.addEventListener('open', () => {
+      connectionStatus.textContent = 'WebSocket Terhubung';
+      connectionStatus.className = 'status ok';
+      addLog('Dashboard berhasil terhubung ke server WebSocket.');
+    });
+
+    socket.addEventListener('close', () => {
+      connectionStatus.textContent = 'WebSocket Terputus';
+      connectionStatus.className = 'status danger';
+      addLog('Koneksi WebSocket terputus.');
+    });
+
+    socket.addEventListener('error', () => {
+      connectionStatus.textContent = 'WebSocket Error';
+      connectionStatus.className = 'status danger';
+      addLog('Terjadi error pada koneksi WebSocket.');
+    });
+
+    socket.addEventListener('message', (event) => {
+      const payload = JSON.parse(event.data);
+
+      if (payload.type === 'welcome') {
+        addLog(payload.message);
+      }
+
+      if (payload.type === 'snapshot') {
+        updateDashboard(payload.data);
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      drawEnergyChart();
+    });
+
+    function sendCommand(type, key) {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type, key }));
+      }
+    }
+
+    function addLog(message) {
+      const item = document.createElement('div');
+      item.textContent = `${new Date().toLocaleTimeString('id-ID')} - ${message}`;
+      logEl.prepend(item);
+
+      while (logEl.children.length > 80) {
+        logEl.removeChild(logEl.lastChild);
+      }
+    }
+
+    function updateDashboard(data) {
+      document.getElementById('solarPower').textContent = `${data.energy.solarPower} W`;
+      document.getElementById('solarMode').textContent = data.energy.mode;
+      document.getElementById('batteryPercent').textContent = `${data.energy.batteryPercent}%`;
+      document.getElementById('batteryProgress').style.width = `${data.energy.batteryPercent}%`;
+      document.getElementById('batteryVoltage').textContent = `Total tegangan: ${data.energy.totalBatteryVoltage} V`;
+      document.getElementById('totalConsumption').textContent = `${data.energy.totalConsumption} W`;
+      document.getElementById('inverterStatus').textContent = `Inverter: ${data.energy.inverterStatus}`;
+      document.getElementById('totalData').textContent = data.totalData;
+
+      document.getElementById('miniSolar').textContent = `${data.energy.solarPower} W`;
+      document.getElementById('miniConsumption').textContent = `${data.energy.totalConsumption} W`;
+      document.getElementById('miniBattery').textContent = `${data.energy.batteryPercent}%`;
+      document.getElementById('miniTemp').textContent = `${data.sensors.kitchenTemp}°C`;
+
+      document.getElementById('kitchenTemp').textContent = `${data.sensors.kitchenTemp}°C`;
+      document.getElementById('smokeStatus').textContent = data.sensors.smokeDetected ? 'Terdeteksi' : 'Normal';
+
+      setStatus('fireStatus', data.sensors.fireStatus);
+      setStatus('gasStatus', data.sensors.gasStatus);
+
+      document.getElementById('lastCleaning').textContent = data.maintenance.lastCleaning;
+      document.getElementById('nextCleaning').textContent = data.maintenance.nextCleaning;
+      document.getElementById('maintenanceStatus').textContent = data.maintenance.status;
+
+      renderLights(data.lights);
+      renderCCTV(data.cctv);
+      renderDevices(data.devices);
+      renderBatteries(data.energy.batteryVoltages);
+      updateAlertBox(data);
+      updateChartHistory(data);
+
+      addLog(`Data ke-${data.totalData}: panel ${data.energy.solarPower} W, konsumsi ${data.energy.totalConsumption} W, baterai ${data.energy.batteryPercent}%.`);
+
+      if (data.sensors.fireStatus !== 'Aman') {
+        addLog('PERINGATAN: Sensor kebakaran berada dalam status waspada.');
+      }
+
+      if (data.sensors.gasStatus !== 'Aman') {
+        addLog('PERINGATAN: Sensor gas LPG berada dalam status waspada.');
+      }
+
+      if (data.energy.inverterStatus !== 'Normal') {
+        addLog('PERINGATAN: Beban inverter tinggi.');
+      }
+    }
+
+    function updateAlertBox(data) {
+      const alertBox = document.getElementById('alertBox');
+      const alerts = [];
+
+      if (data.sensors.fireStatus !== 'Aman') {
+        alerts.push('Potensi kebakaran terdeteksi di area dapur.');
+      }
+
+      if (data.sensors.gasStatus !== 'Aman') {
+        alerts.push('Kadar gas LPG meningkat dan perlu diperiksa.');
+      }
+
+      if (data.energy.inverterStatus !== 'Normal') {
+        alerts.push('Beban inverter tinggi karena konsumsi listrik meningkat.');
+      }
+
+      if (alerts.length === 0) {
+        alertBox.style.display = 'none';
+        return;
+      }
+
+      alertBox.style.display = 'block';
+      alertBox.textContent = alerts.join(' ');
+    }
+
+    function updateChartHistory(data) {
+      chartHistory.push({
+        time: data.time,
+        solar: data.energy.solarPower,
+        consumption: data.energy.totalConsumption,
+        battery: data.energy.batteryPercent,
+        temp: data.sensors.kitchenTemp
+      });
+
+      if (chartHistory.length > maxChartPoints) {
+        chartHistory.shift();
+      }
+
+      drawEnergyChart();
+    }
+
+    function drawEnergyChart() {
+      const canvas = energyCanvas;
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.width = Math.floor(rect.width * dpr);
+      canvas.height = Math.floor(rect.height * dpr);
+
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const width = rect.width;
+      const height = rect.height;
+      const padding = 34;
+      const chartWidth = width - padding * 2;
+      const chartHeight = height - padding * 2;
+
+      ctx.clearRect(0, 0, width, height);
+
+      drawGrid(ctx, width, height, padding, chartWidth, chartHeight);
+
+      if (chartHistory.length < 2) {
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '14px Arial';
+        ctx.fillText('Menunggu data grafik...', padding, height / 2);
+        return;
+      }
+
+      drawLine(ctx, chartHistory.map((d) => d.solar), 0, 1200, '#38bdf8', padding, chartWidth, chartHeight);
+      drawLine(ctx, chartHistory.map((d) => d.consumption), 0, 1600, '#f59e0b', padding, chartWidth, chartHeight);
+      drawLine(ctx, chartHistory.map((d) => d.battery), 0, 100, '#22c55e', padding, chartWidth, chartHeight);
+      drawLine(ctx, chartHistory.map((d) => d.temp), 20, 45, '#ef4444', padding, chartWidth, chartHeight);
+
+      drawLegend(ctx, padding, 18);
+    }
+
+    function drawGrid(ctx, width, height, padding, chartWidth, chartHeight) {
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.18)';
+      ctx.lineWidth = 1;
+
+      for (let i = 0; i <= 4; i++) {
+        const y = padding + (chartHeight / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(width - padding, y);
+        ctx.stroke();
+      }
+
+      for (let i = 0; i <= 6; i++) {
+        const x = padding + (chartWidth / 6) * i;
+        ctx.beginPath();
+        ctx.moveTo(x, padding);
+        ctx.lineTo(x, height - padding);
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '12px Arial';
+      ctx.fillText('Realtime trend', padding, height - 10);
+    }
+
+    function drawLine(ctx, values, min, max, color, padding, chartWidth, chartHeight) {
+      const points = values.map((value, index) => {
+        const x = padding + (chartWidth / Math.max(values.length - 1, 1)) * index;
+        const ratio = (value - min) / (max - min);
+        const y = padding + chartHeight - ratio * chartHeight;
+        return { x, y };
+      });
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+
+      points.forEach((point, index) => {
+        if (index === 0) {
+          ctx.moveTo(point.x, point.y);
+        } else {
+          ctx.lineTo(point.x, point.y);
+        }
+      });
+
+      ctx.stroke();
+
+      const last = points[points.length - 1];
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(last.x, last.y, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawLegend(ctx, x, y) {
+      const legends = [
+        { label: 'Panel Surya', color: '#38bdf8' },
+        { label: 'Konsumsi', color: '#f59e0b' },
+        { label: 'Baterai', color: '#22c55e' },
+        { label: 'Suhu', color: '#ef4444' }
+      ];
+
+      let currentX = x;
+      ctx.font = '12px Arial';
+
+      legends.forEach((legend) => {
+        ctx.fillStyle = legend.color;
+        ctx.fillRect(currentX, y - 8, 10, 10);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillText(legend.label, currentX + 15, y);
+        currentX += ctx.measureText(legend.label).width + 45;
+      });
+    }
+
+    function setStatus(id, value) {
+      const el = document.getElementById(id);
+      el.textContent = value;
+
+      if (value === 'Aman' || value === 'Normal') {
+        el.className = 'status ok';
+      } else if (value === 'Bahaya') {
+        el.className = 'status danger';
+      } else {
+        el.className = 'status warn';
+      }
+    }
+
+    function renderLights(lights) {
+      const labels = {
+        teras: 'Teras',
+        ruangTamu: 'Ruang Tamu',
+        kamar1: 'Kamar 1',
+        kamar2: 'Kamar 2',
+        dapur: 'Dapur',
+        kamarMandi: 'Kamar Mandi'
+      };
+
+      const container = document.getElementById('lights');
+      container.innerHTML = '';
+
+      Object.entries(lights).forEach(([key, value]) => {
+        container.innerHTML += `
+          <div class="item">
+            <div>
+              <span>${labels[key]}</span>
+              <small>${value ? 'Lampu menyala' : 'Lampu mati'}</small>
+            </div>
+            <button class="${value ? '' : 'off'}" onclick="sendCommand('toggle-light', '${key}')">
+              ${value ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        `;
+      });
+    }
+
+    function renderCCTV(cctv) {
+      const labels = {
+        teras: 'CCTV Teras',
+        garasi: 'CCTV Garasi',
+        ruangTamu: 'CCTV Ruang Tamu',
+        belakangRumah: 'CCTV Belakang'
+      };
+
+      const container = document.getElementById('cctv');
+      container.innerHTML = '';
+
+      Object.entries(cctv).forEach(([key, value]) => {
+        container.innerHTML += `
+          <div class="item">
+            <div>
+              <span>${labels[key]}</span>
+              <small>${value ? 'Kamera aktif' : 'Kamera offline'}</small>
+            </div>
+            <button class="${value ? '' : 'off'}" onclick="sendCommand('toggle-cctv', '${key}')">
+              ${value ? 'Aktif' : 'Offline'}
+            </button>
+          </div>
+        `;
+      });
+    }
+
+    function renderDevices(devices) {
+      const container = document.getElementById('devices');
+      container.innerHTML = '';
+
+      Object.entries(devices).forEach(([key, device]) => {
+        container.innerHTML += `
+          <div class="item">
+            <div>
+              <span>${device.name}</span>
+              <small>${device.watt} W ketika aktif</small>
+            </div>
+            <button class="${device.on ? '' : 'off'}" onclick="sendCommand('toggle-device', '${key}')">
+              ${device.on ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        `;
+      });
+    }
+
+    function renderBatteries(batteries) {
+      const container = document.getElementById('batteryList');
+      container.innerHTML = '';
+
+      batteries.forEach((voltage, index) => {
+        container.innerHTML += `
+          <div class="item">
+            <div>
+              <span>Baterai ${index + 1}</span>
+              <small>Monitoring tegangan</small>
+            </div>
+            <b>${voltage} V</b>
+          </div>
+        `;
+      });
+    }
+  </script>
+</body>
+</html>
