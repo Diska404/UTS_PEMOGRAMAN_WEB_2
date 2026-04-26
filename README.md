@@ -189,23 +189,3 @@ Hasil ini menunjukkan bahwa WebSocket dapat digunakan untuk simulasi monitoring 
 ### Kode Dashboard
 
 >![Kode index.html](SS/index-code.png)
-
-## Catatan
-
-Proyek ini masih berupa simulasi. Data sensor belum berasal dari perangkat fisik seperti ESP32, Arduino, sensor DHT, sensor gas, sensor arus, atau solar charge controller. Namun, alur komunikasinya dibuat menyerupai sistem IoT, yaitu server mengirim data ke dashboard secara real-time dan dashboard dapat mengirim perintah kembali ke server.
-
-## Pengembangan Selanjutnya
-
-Beberapa pengembangan yang dapat dilakukan:
-
-- Menghubungkan dashboard dengan ESP32 atau Arduino.
-- Mengambil data dari sensor suhu dan kelembapan asli.
-- Menggunakan sensor gas MQ-2 atau MQ-5.
-- Menggunakan sensor arus dan tegangan untuk panel surya.
-- Menambahkan database untuk menyimpan riwayat data.
-- Menambahkan login pengguna.
-- Menggunakan koneksi aman `wss://` untuk penerapan produksi.
-
-## Lisensi
-
-Proyek ini dibuat untuk kebutuhan pembelajaran dan tugas mata kuliah Pemrograman Web 2.
