@@ -13,7 +13,7 @@ Eksperimen ini dibuat untuk memahami bagaimana WebSocket dapat digunakan sebagai
 | Mata Kuliah | Pemrograman Web 2 |
 | Topik | WebSocket |
 | Studi Kasus | Simulasi Smart Home IoT dan Monitoring Energi Surya |
-| Teknologi Utama | Node.js, WebSocket, HTML, CSS, JavaScript |- Nama: **Diska Kurnia Azzahra Putra**
+| Bahasa Program | Node.js, WebSocket, HTML, CSS, JavaScript |- Nama: **Diska Kurnia Azzahra Putra**
 
 
 ## Tujuan Eksperimen
