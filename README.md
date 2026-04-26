@@ -167,23 +167,23 @@ Hasil ini menunjukkan bahwa WebSocket dapat digunakan untuk simulasi monitoring 
 
 ### Tampilan Dashboard
 
-![Dashboard Smart Home IoT](screenshots/dashboard-full.png)
+![Dashboard Smart Home IoT](SS/dashboard-full.png)
 
 ### Grafik Real-Time
 
-![Grafik Real-Time](screenshots/dashboard-graph.png)
+>![Grafik Real-Time](screenshots/dashboard-graph.png)
 
 ### Terminal Server Node.js
 
-![Terminal Server](screenshots/terminal-server.png)
+>![Terminal Server](screenshots/terminal-server.png)
 
 ### Kode Server
 
-![Kode server.js](screenshots/server-code.png)
+>![Kode server.js](screenshots/server-code.png)
 
 ### Kode Dashboard
 
-![Kode index.html](screenshots/index-code.png)
+>![Kode index.html](screenshots/index-code.png)
 
 ## Catatan
 
